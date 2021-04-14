@@ -73,45 +73,64 @@ class TransactionController extends Controller
             'payment_method' => $request['payment_method']
         ]);
 
-        $this->Check_Availibilty($request['checkin'],$request['checkout']);
+        $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$request['room_type'],$request['no_of_rooms']);
+        if ($flagroomAvailable == 1) {
+            $transaction->save();
+            $booking = new Booking([
+                'transaction_id' => $transaction->transaction_id, 
+                'from_date' => $request['checkin'],
+                'to_date' => $request['checkout'],
+                'room_type_id' => $request['room_type'],
+                'no_of_rooms' => $request['no_of_rooms'],
+                'adult' => $request['adult'],
+                'child' => $request['child'],
+                'status' => 'confirmed'
+            ]);
 
-        $transaction->save();
+            $booking->save();
 
-        $booking = new Booking([
-            'transaction_id' => $transaction->transaction_id, 
-            'from_date' => $request['checkin'],
-            'to_date' => $request['checkout'],
-            'room_type_id' => $request['room_type'],
-            'no_of_rooms' => $request['no_of_rooms'],
-            'adult' => $request['adult'],
-            'child' => $request['child'],
-            'status' => 'confirmed'
-        ]);
+            return $this->index()->with(
+                [
+                    'message_success' => "Booking of <b>" . $transaction->first_name . "</b> is done."
+                ]
+            );
+        }
+        else{
+            return $this->index()->with(
+                [
+                    'message_success' => "Booking of <b>" . $transaction->first_name . "</b> could NOT be done."
+                ]
+            );
+        }
 
-        $booking->save();
-
-        return $this->index()->with(
-            [
-                'message_success' => "Booking of <b>" . $transaction->first_name . "</b> is done."
-            ]
-        );
+        
 
     }
 
 
-    public function Check_Availibilty($from_date,$to_date)
+    public function Check_Availibilty($from_date,$to_date,$room_type_id,$booking_rooms)
     {
-        //dd('Inside Check_Availibilty');
 
-        DB::enableQueryLog();
-        $products = DB::select("select date,room_name,room_inventories.no_of_rooms,sum(bookings.no_of_rooms) as booked_rooms 
+        //DB::enableQueryLog();
+        $bookings = DB::select("select date,room_name,room_inventories.no_of_rooms as total_rooms_assigned,sum(bookings.no_of_rooms) as rooms_booked 
         from room_inventories
-        join room_types on room_types.room_type_id=room_inventories.room_type_id and date between '".$from_date."' and '".$to_date."'
+        join room_types on room_types.room_type_id=room_inventories.room_type_id and date between '".$from_date."' and '".$to_date."' and room_inventories.room_type_id=".$room_type_id."
         left join bookings on bookings.room_type_id=room_inventories.room_type_id and (from_date<=date and to_date>date) 
         group by date,room_inventories.room_type_id,room_name,room_inventories.no_of_rooms order by date asc, room_inventories.room_type_id");
-        $query = DB::getQueryLog();
-        $query = end($query);
-        echo "<pre>";print_r($query);  
+        //$query = DB::getQueryLog();
+        //$query = end($query);
+        //echo "<pre>";print_r($query); 
+        foreach($bookings as $booking){
+            $rooms_available = $booking->total_rooms_assigned - $booking->rooms_booked;
+            if($rooms_available > $booking_rooms){
+                $flagroomAvailable = 1;
+            }
+            else{
+                $flagroomAvailable = 0;
+            }
+        } 
+        //print_r($flagroomAvailable);
+        return $rooms_available;
     }
 
 
