@@ -74,6 +74,7 @@ class TransactionController extends Controller
         ]);
 
         $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$request['room_type'],$request['no_of_rooms']);
+        //echo "Room Available".$flagroomAvailable;
         if ($flagroomAvailable == 1) {
             $transaction->save();
             $booking = new Booking([
@@ -91,7 +92,7 @@ class TransactionController extends Controller
 
             return $this->index()->with(
                 [
-                    'message_success' => "Booking of <b>" . $transaction->first_name . "</b> is done."
+                    'message_success' => "Booking of <b>" . $transaction->first_name . " from ". $booking->from_date. " to " .$booking->to_date."</b> is done."
                 ]
             );
         }
@@ -129,8 +130,9 @@ class TransactionController extends Controller
                 $flagroomAvailable = 0;
             }
         } 
-        //print_r($flagroomAvailable);
-        return $rooms_available;
+        print_r($flagroomAvailable);
+        //exit();
+        return $flagroomAvailable;
     }
 
 
@@ -155,11 +157,28 @@ class TransactionController extends Controller
      * @param  \App\Transaction  $transaction
      * @return \Illuminate\Http\Response
      */
-    public function edit(Transaction $transaction)
+    public function edit(Transaction $transaction, Booking $booking)
     {
+        //echo $transaction->transaction_id;
+        //$booking->from_date = '2020-04-16';
+
+        $booking_details=DB::select("select booking_id,from_date,to_date,room_type_id,no_of_rooms,adult,child from bookings where transaction_id =".$transaction->transaction_id);
+
+        //$booking_details = json_decode(json_encode($booking_details), true);
+        //echo "<pre>";print_r($booking_details);
+
+        foreach ($booking_details as $key => $value) {
+                $booking->from_date = $value->from_date;
+                $booking->to_date = $value->to_date;
+                $booking->no_of_rooms = $value->no_of_rooms;
+                $booking->room_type_id = $value->room_type_id;
+                $booking->adult = $value->adult;
+                $booking->child = $value->child;
+        }
+
         return view('edit_booking')->with([
 
-            'transaction' => $transaction
+            'transaction' => $transaction, 'booking' => $booking
 
         ]);
     }
@@ -171,16 +190,25 @@ class TransactionController extends Controller
      * @param  \App\Transaction  $transaction
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Transaction $transaction)
+    public function update(Request $request, Transaction $transaction, Booking $booking)
     {
         $request->validate([
 
+            //transaction table
             'first_name' => 'required|min:3',
             'last_name' => 'required|min:3', 
             'email'=> 'email:rfc,dns',
             'contact_no' => 'required',
             'address' => 'required',
             'country' => 'required',
+
+            //bookings table
+            'checkin' => 'required',
+            'checkout' => 'required',
+            'room_type' => 'required',
+            'no_of_rooms' => 'required',
+            'adult' => 'required',
+            'child' => 'required',
         ]);
 
         $transaction->update([
@@ -191,6 +219,18 @@ class TransactionController extends Controller
             'address' => $request['address'],
             'country' => $request['country'],
             'payment_method' => $request['payment_method']
+        ]);
+
+        $booking->update([
+                'transaction_id' => $transaction->transaction_id, 
+                'from_date' => $request['checkin'],
+                'to_date' => $request['checkout'],
+                'room_type_id' => $request['room_type'],
+                'no_of_rooms' => $request['no_of_rooms'],
+                'adult' => $request['adult'],
+                'child' => $request['child'],
+                'status' => 'confirmed'
+
         ]);
 
         return $this->index()->with(

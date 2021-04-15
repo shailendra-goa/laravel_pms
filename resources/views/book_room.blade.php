@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Create New Hobby</div>
+                    <div class="card-header">Book Room</div>
                     <div class="card-body">
                         <form action="/roombooked" method="post">
                             @csrf
@@ -23,7 +23,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="name">Contact No</label>
-                                <input type="text" class="form-control" id="contact_no" name="contact_no" value="{{old('contact_no')}}">>
+                                <input type="text" class="form-control" id="contact_no" name="contact_no" value="{{old('contact_no')}}">
                             </div>
                             <div class="form-group">
                                 <label for="name">Address</label>
@@ -35,11 +35,11 @@
                             </div>
                             <div class="form-group">
                                 <label for="name">Checkin Date</label>
-                                <input type="text" class="form-control" id="checkin" name="checkin">
+                                <input type="date" class="form-control" id="checkin" name="checkin">
                             </div>
                             <div class="form-group">
                                 <label for="name">Checkout Date</label>
-                                <input type="text" class="form-control" id="checkout" name="checkout">
+                                <input type="date" class="form-control" id="checkout" name="checkout">
                             </div>
                             <div class="form-group">
                                 <label for="name">No of rooms</label>
@@ -51,11 +51,19 @@
                             </div>
                             <div class="form-group">
                                 <label for="name">Adult</label>
-                                <input type="text" class="form-control" id="adult" name="adult">
-                            </div>
-                            <div class="form-group">
+                                <select class="form-select" aria-label="Default select example" id="adult" name="adult">
+                                  <option selected>Select</option>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                </select>
                                 <label for="name">Child</label>
-                                <input type="text" class="form-control" id="child" name="child">
+                                <select class="form-select" aria-label="Default select example" id="child" name="child">
+                                  <option selected>Select</option>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="name">Payment Method</label>
