@@ -85,7 +85,7 @@ class TransactionController extends Controller
                 'no_of_rooms' => $request['no_of_rooms'],
                 'adult' => $request['adult'],
                 'child' => $request['child'],
-                'status' => 'confirmed'
+                'status' => "confirmed"
             ]);
 
             $booking->save();
@@ -160,12 +160,14 @@ class TransactionController extends Controller
     public function edit(Transaction $transaction, Booking $booking)
     {
         //echo $transaction->transaction_id;
-        //$booking->from_date = '2020-04-16';
+        DB::enableQueryLog();
+        //$booking = \App\Booking::find($transaction->transaction_id);
+        $booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
+        //dd(DB::getQueryLog());
 
-        $booking_details=DB::select("select booking_id,from_date,to_date,room_type_id,no_of_rooms,adult,child from bookings where transaction_id =".$transaction->transaction_id);
+        //echo "<pre>";print_r($booking);exit();
 
-        //$booking_details = json_decode(json_encode($booking_details), true);
-        //echo "<pre>";print_r($booking_details);
+        //$booking_details=DB::select("select booking_id,from_date,to_date,room_type_id,no_of_rooms,adult,child from bookings where transaction_id =".$transaction->transaction_id);
 
         foreach ($booking_details as $key => $value) {
                 $booking->from_date = $value->from_date;
@@ -190,7 +192,7 @@ class TransactionController extends Controller
      * @param  \App\Transaction  $transaction
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Transaction $transaction, Booking $booking)
+    public function update(Request $request, Transaction $transaction)
     {
         $request->validate([
 
@@ -221,8 +223,9 @@ class TransactionController extends Controller
             'payment_method' => $request['payment_method']
         ]);
 
-        $booking->update([
-                'transaction_id' => $transaction->transaction_id, 
+        //DB::enableQueryLog(); // Enable query log
+
+        $transaction->bookings()->update([
                 'from_date' => $request['checkin'],
                 'to_date' => $request['checkout'],
                 'room_type_id' => $request['room_type'],
@@ -232,6 +235,8 @@ class TransactionController extends Controller
                 'status' => 'confirmed'
 
         ]);
+
+        //dd(DB::getQueryLog());
 
         return $this->index()->with(
             [

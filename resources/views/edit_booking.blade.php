@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Create New Hobby</div>
+                    <div class="card-header">Edit Booking</div>
                     <div class="card-body">
                         <form action="/transaction/{{$transaction->transaction_id}}/update" method="post">
                             @csrf

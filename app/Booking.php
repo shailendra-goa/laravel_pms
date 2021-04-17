@@ -11,4 +11,9 @@ class Booking extends Model
     protected $fillable = [
         'transaction_id', 'from_date','to_date','room_type_id','no_of_rooms','adult','child',
     ];
+
+    public function transaction()
+    {
+        return $this->belongsTo('App\Transaction','transaction_id');
+    }
 }
