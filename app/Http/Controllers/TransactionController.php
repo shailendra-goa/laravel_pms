@@ -112,27 +112,95 @@ class TransactionController extends Controller
     public function Check_Availibilty($from_date,$to_date,$room_type_id,$booking_rooms)
     {
 
-        //DB::enableQueryLog();
-        $bookings = DB::select("select date,room_name,room_inventories.no_of_rooms as total_rooms_assigned,sum(bookings.no_of_rooms) as rooms_booked 
-        from room_inventories
-        join room_types on room_types.room_type_id=room_inventories.room_type_id and date between '".$from_date."' and '".$to_date."' and room_inventories.room_type_id=".$room_type_id."
-        left join bookings on bookings.room_type_id=room_inventories.room_type_id and (from_date<=date and to_date>date) 
-        group by date,room_inventories.room_type_id,room_name,room_inventories.no_of_rooms order by date asc, room_inventories.room_type_id");
-        //$query = DB::getQueryLog();
-        //$query = end($query);
-        //echo "<pre>";print_r($query); 
-        foreach($bookings as $booking){
-            $rooms_available = $booking->total_rooms_assigned - $booking->rooms_booked;
-            if($rooms_available > $booking_rooms){
+        $date = $from_date;
+        $flagroomAvailable = 1;
+        while(($date<$to_date) && ($flagroomAvailable == 1))
+        {
+
+            DB::enableQueryLog();
+            $bookedArr = DB::select("select room_types.no_of_rooms, sum(bookings.no_of_rooms) as rooms_booked from bookings inner join room_types on room_types.room_type_id=bookings.room_type_id where bookings.room_type_id=".$room_type_id." and from_date<='".$date."' and to_date>'".$date."' group by room_types.no_of_rooms");
+            $query = DB::getQueryLog();
+            $query = end($query);
+
+            if(count($bookedArr)>0)
+            {
+                foreach ($bookedArr as $booked)
+                {
+                  $rooms_available = $booked->no_of_rooms - $booked->rooms_booked;
+                  if($rooms_available > $booking_rooms){
+                    $flagroomAvailable = 1;
+                  }
+                  else{
+                    $flagroomAvailable = 0;
+                  }
+                }
+
+            }
+            else
+            {
                 $flagroomAvailable = 1;
             }
-            else{
-                $flagroomAvailable = 0;
-            }
+            
+            $date = date('Y-m-d', strtotime($date. ' + 1 days'));
+
         } 
+
+
         print_r($flagroomAvailable);
         //exit();
         return $flagroomAvailable;
+    }
+
+    public function show_availability()
+    {
+        $from_date = isset($_GET['from_date']) ? $_GET['from_date'] : date('Y-m-d');
+        $date = $from_date;
+        $to_date = isset($_GET['to_date'])  ? $_GET['to_date'] : (date('Y-m-d', strtotime($from_date. ' + 10 days')));
+
+        $html = '';    
+
+        while(($date<$to_date))
+        {
+            $roomArr = DB::table('room_types')->select('room_type_id', 'room_name','no_of_rooms')->get()->toArray();
+
+            //echo "<pre>";print_r($roomArr);
+
+            foreach ($roomArr as $room)
+            {
+
+                //print_r($room -> room_type_id);
+                //print_r($room -> room_name);
+
+                DB::enableQueryLog();
+                $bookedArr = DB::select("select sum(no_of_rooms) as booked_rooms from bookings where room_type_id=".$room -> room_type_id." and from_date<='".$date."' and to_date>'".$date."'");
+                $query = DB::getQueryLog();
+                $query = end($query);
+                foreach ($bookedArr as $booked)
+                {
+                  $html .= '<tr>
+                      <th scope="row">'.$date.'</th>
+                      <td>'.$room -> room_name.'</td>
+                      <td>'.$room -> no_of_rooms.'</td>
+                      <td>'.(empty($booked -> booked_rooms) ? '0' : $booked -> booked_rooms) .'</td>
+                      <td>'.($room -> no_of_rooms - (empty($booked -> booked_rooms) ? '0' : $booked -> booked_rooms)) .'</td>
+                    </tr>';
+                }
+
+
+            }
+
+            $date = date('Y-m-d', strtotime($date. ' + 1 days'));
+
+        } 
+
+        //echo "<pre>";print_r($html);
+
+        //exit();
+
+
+        return view('start')->with([
+           'html' => $html 
+        ]);
     }
 
 
@@ -194,6 +262,7 @@ class TransactionController extends Controller
      */
     public function update(Request $request, Transaction $transaction)
     {
+
         $request->validate([
 
             //transaction table
@@ -213,19 +282,24 @@ class TransactionController extends Controller
             'child' => 'required',
         ]);
 
-        $transaction->update([
-            'first_name' => $request['first_name'],
-            'last_name' => $request['last_name'], 
-            'email' => $request['email'],
-            'contact_no' => $request['contact_no'],
-            'address' => $request['address'],
-            'country' => $request['country'],
-            'payment_method' => $request['payment_method']
-        ]);
+        $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$request['room_type'],$request['no_of_rooms']);
+        //echo "Room Available".$flagroomAvailable;
+
+        if($flagroomAvailable)
+        {
+            $transaction->update([
+                'first_name' => $request['first_name'],
+                'last_name' => $request['last_name'], 
+                'email' => $request['email'],
+                'contact_no' => $request['contact_no'],
+                'address' => $request['address'],
+                'country' => $request['country'],
+                'payment_method' => $request['payment_method']
+            ]);
 
         //DB::enableQueryLog(); // Enable query log
 
-        $transaction->bookings()->update([
+            $transaction->bookings()->update([
                 'from_date' => $request['checkin'],
                 'to_date' => $request['checkout'],
                 'room_type_id' => $request['room_type'],
@@ -234,15 +308,23 @@ class TransactionController extends Controller
                 'child' => $request['child'],
                 'status' => 'confirmed'
 
-        ]);
+            ]);
 
         //dd(DB::getQueryLog());
-
-        return $this->index()->with(
-            [
-                'message_success' => "Booking of <b>" . $transaction->first_name . "</b> is updated."
-            ]
-        );
+            return $this->index()->with(
+                [
+                    'message_success' => "Booking of <b>" . $transaction->first_name . "</b> is updated."
+                ]
+            );
+        }
+        else
+        {
+            return $this->index()->with(
+                [
+                    'message_success' => "Rooms NOT available."
+                ]
+            );
+        }
     }
 
     /**

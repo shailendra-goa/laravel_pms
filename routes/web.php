@@ -13,20 +13,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('start');
-});
+
 Route::get('/info', function () {
     return view('info');
 });
-Route::get('/bookings','TransactionController@index');
-Route::get('/bookroom','TransactionController@create');
-Route::post('/roombooked','TransactionController@store');
-Route::get('/transaction/{transaction}','TransactionController@show');
-Route::get('/transaction/{transaction}/edit','TransactionController@edit');
-Route::put('/transaction/{transaction}/update','TransactionController@update');
-Route::delete('/transaction/{transaction}/destroy','TransactionController@destroy');
 
+
+Route::group(['middleware' => ['auth']], function() {
+	Route::get('/bookings','TransactionController@index');
+	Route::get('/bookroom','TransactionController@create');
+	Route::post('/roombooked','TransactionController@store');
+	Route::get('/transaction/{transaction}','TransactionController@show');
+	Route::get('/transaction/{transaction}/edit','TransactionController@edit');
+	Route::put('/transaction/{transaction}/update','TransactionController@update');
+	Route::delete('/transaction/{transaction}/destroy','TransactionController@destroy');
+	Route::get('/', 'TransactionController@show_availability');
+});
 
 
 Auth::routes();
