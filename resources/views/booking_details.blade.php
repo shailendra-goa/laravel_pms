@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Create New Hobby</div>
+                    <div class="card-header">Booking Details</div>
                     <div class="card-body">
                             @csrf
                             <div class="form-group">

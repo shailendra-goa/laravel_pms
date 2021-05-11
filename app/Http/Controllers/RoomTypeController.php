@@ -14,7 +14,12 @@ class RoomTypeController extends Controller
      */
     public function index()
     {
-        //
+        $room_types = room_type::all();
+        dd($transactions);
+
+        return view('book_room')->with([
+           '$room_types' => $room_types 
+        ]);
     }
 
     /**

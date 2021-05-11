@@ -5,6 +5,8 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="container">
+              <form action="/availability" method="post">
+                @csrf
               <div class="row">
                 <div class="col-sm">
                   <label class="form-label">From Date</label>
@@ -23,7 +25,8 @@
                 </div>
               </div>
             </div>
-            <table class="table table-bordered">
+            </form>
+            <table class="table table-bordered table-striped">
               <thead>
                 <tr>
                   <th scope="col">Date</th>

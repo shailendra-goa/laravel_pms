@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Booking;
 use Illuminate\Http\Request;
+use DB;
 
 class BookingController extends Controller
 {
@@ -86,5 +87,14 @@ class BookingController extends Controller
     public function destroy(Booking $booking)
     {
         //
+    }
+
+    public static function viewbooking($transaction_id,$room_type_id)
+    {
+        $booking_details = DB::table('bookings')
+                            ->where('transaction_id', $transaction_id)
+                            ->where('room_type_id', $room_type_id)
+                            ->get();
+        return $booking_details;
     }
 }

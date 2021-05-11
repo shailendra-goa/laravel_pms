@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Transaction;
 use App\Booking;
+use App\room_type;
 use Illuminate\Http\Request;
 use DB;
 
@@ -18,6 +19,7 @@ class TransactionController extends Controller
     {
         $transactions = Transaction::all();
         //dd($transactions);
+
         return view('transactions')->with([
            'transactions' => $transactions 
         ]);
@@ -30,7 +32,12 @@ class TransactionController extends Controller
      */
     public function create()
     {
-        return view('book_room');
+        //return view('book_room');
+        $room_types = room_type::all();
+
+        return view('book_room')->with([
+           'room_types' => $room_types 
+        ]);
     }
 
     /**
@@ -56,10 +63,10 @@ class TransactionController extends Controller
             //bookings table
             'checkin' => 'required',
             'checkout' => 'required',
-            'room_type' => 'required',
-            'no_of_rooms' => 'required',
-            'adult' => 'required',
-            'child' => 'required',
+            'room_type_id' => 'required',
+            //'no_of_rooms' => 'required',
+            //'adult' => 'required',
+            //'child' => 'required',
         ]);
 
 
@@ -73,31 +80,50 @@ class TransactionController extends Controller
             'payment_method' => $request['payment_method']
         ]);
 
-        $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$request['room_type'],$request['no_of_rooms']);
-        //echo "Room Available".$flagroomAvailable;
-        if ($flagroomAvailable == 1) {
+
+        $room_type_ids = $request['room_type_id'];
+        echo (count($room_type_ids));
+        print_r($room_type_ids);
+
+        for($i=0;$i<count($room_type_ids);$i++) 
+        {
+            echo "no of rooms".$request['no_of_rooms'.$room_type_ids[$i]];
+            $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
+            //echo "Room Available".$flagroomAvailable;
+            if(!$flagroomAvailable)
+            {
+                break;
+            }
+        }
+
+        if ($flagroomAvailable == 1) 
+        {
             $transaction->save();
-            $booking = new Booking([
-                'transaction_id' => $transaction->transaction_id, 
-                'from_date' => $request['checkin'],
-                'to_date' => $request['checkout'],
-                'room_type_id' => $request['room_type'],
-                'no_of_rooms' => $request['no_of_rooms'],
-                'adult' => $request['adult'],
-                'child' => $request['child'],
-                'status' => "confirmed"
-            ]);
+            for($i=0;$i<count($room_type_ids);$i++) 
+            {
+                $booking = new Booking([
+                    'transaction_id' => $transaction->transaction_id, 
+                    'from_date' => $request['checkin'],
+                    'to_date' => $request['checkout'],
+                    'room_type_id' => $room_type_ids[$i],
+                    'no_of_rooms' => $request['no_of_rooms'.$room_type_ids[$i]],
+                    'adult' => $request['adult'.$room_type_ids[$i]],
+                    'child' => $request['child'.$room_type_ids[$i]],
+                    'status' => "confirmed"
+                ]);
+                $booking->save();
 
-            $booking->save();
+            }
 
-            return $this->index()->with(
+            return $this->booking_list()->with(
                 [
                     'message_success' => "Booking of <b>" . $transaction->first_name . " from ". $booking->from_date. " to " .$booking->to_date."</b> is done."
                 ]
             );
         }
+
         else{
-            return $this->index()->with(
+            return $this->booking_list()->with(
                 [
                     'message_success' => "Booking of <b>" . $transaction->first_name . "</b> could NOT be done."
                 ]
@@ -105,6 +131,17 @@ class TransactionController extends Controller
         }
 
         
+
+    }
+
+    public function booking_list()
+    {
+        $bookings = DB::select("select transactions.transaction_id, first_name, last_name, email, from_date, to_date, room_name, bookings.no_of_rooms, adult, child from transactions inner join bookings on transactions.transaction_id=bookings.transaction_id inner join room_types on bookings.room_type_id=room_types.room_type_id order by transactions.created_at desc");
+
+        return view('transactions')->with([
+           'bookings' => $bookings 
+        ]);
+
 
     }
 
@@ -146,16 +183,16 @@ class TransactionController extends Controller
         } 
 
 
-        print_r($flagroomAvailable);
+        //print_r($flagroomAvailable);
         //exit();
         return $flagroomAvailable;
     }
 
-    public function show_availability()
+    public function show_availability(Request $request)
     {
-        $from_date = isset($_GET['from_date']) ? $_GET['from_date'] : date('Y-m-d');
+        $from_date = isset($request['from_date']) ? $request['from_date'] : date('Y-m-d');
         $date = $from_date;
-        $to_date = isset($_GET['to_date'])  ? $_GET['to_date'] : (date('Y-m-d', strtotime($from_date. ' + 10 days')));
+        $to_date = isset($request['to_date'])  ? $request['to_date'] : (date('Y-m-d', strtotime($from_date. ' + 10 days')));
 
         $html = '';    
 
@@ -210,11 +247,22 @@ class TransactionController extends Controller
      * @param  \App\Transaction  $transaction
      * @return \Illuminate\Http\Response
      */
-    public function show(Transaction $transaction)
+    public function show(Transaction $transaction, Booking $booking)
     {
+        $booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
+
+        foreach ($booking_details as $key => $value) {
+                $booking->from_date = $value->from_date;
+                $booking->to_date = $value->to_date;
+                $booking->no_of_rooms = $value->no_of_rooms;
+                $booking->room_type_id = $value->room_type_id;
+                $booking->adult = $value->adult;
+                $booking->child = $value->child;
+        }
+
         return view('booking_details')->with([
 
-            'transaction' => $transaction
+            'transaction' => $transaction, 'booking' => $booking
 
         ]);
     }
@@ -227,7 +275,7 @@ class TransactionController extends Controller
      */
     public function edit(Transaction $transaction, Booking $booking)
     {
-        //echo $transaction->transaction_id;
+        echo $transaction->transaction_id;
         DB::enableQueryLog();
         //$booking = \App\Booking::find($transaction->transaction_id);
         $booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
@@ -235,20 +283,26 @@ class TransactionController extends Controller
 
         //echo "<pre>";print_r($booking);exit();
 
-        //$booking_details=DB::select("select booking_id,from_date,to_date,room_type_id,no_of_rooms,adult,child from bookings where transaction_id =".$transaction->transaction_id);
+        /*$booking_details=DB::select("select booking_id,from_date,to_date,room_type_id,no_of_rooms,adult,child from bookings where transaction_id =".$transaction->transaction_id);*/
+        //echo "<pre>";print_r($booking_details);exit();
 
-        foreach ($booking_details as $key => $value) {
+
+        /*foreach ($booking_details as $key => $value) {
                 $booking->from_date = $value->from_date;
                 $booking->to_date = $value->to_date;
                 $booking->no_of_rooms = $value->no_of_rooms;
                 $booking->room_type_id = $value->room_type_id;
                 $booking->adult = $value->adult;
                 $booking->child = $value->child;
-        }
+        }*/
+
+        //echo "<pre>";print_r($booking);exit();
+
+        $room_types = room_type::all();
 
         return view('edit_booking')->with([
 
-            'transaction' => $transaction, 'booking' => $booking
+            'transaction' => $transaction, 'bookings' => $booking_details, 'room_types' => $room_types
 
         ]);
     }
@@ -276,14 +330,25 @@ class TransactionController extends Controller
             //bookings table
             'checkin' => 'required',
             'checkout' => 'required',
-            'room_type' => 'required',
-            'no_of_rooms' => 'required',
-            'adult' => 'required',
-            'child' => 'required',
+            //'room_type_id' => 'required',
+            //'no_of_rooms' => 'required',
+            //'adult' => 'required',
+            //'child' => 'required',
         ]);
 
-        $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$request['room_type'],$request['no_of_rooms']);
-        //echo "Room Available".$flagroomAvailable;
+        $room_type_ids = $request['room_type_id'];
+
+        for($i=0;$i<count($room_type_ids);$i++) 
+        {
+            $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
+            //echo "Room Id ".$room_type_ids[$i];
+            //echo "Room Available ".$flagroomAvailable;
+            if(!$flagroomAvailable)
+            {
+                break;
+            }
+
+        }
 
         if($flagroomAvailable)
         {
@@ -297,21 +362,28 @@ class TransactionController extends Controller
                 'payment_method' => $request['payment_method']
             ]);
 
-        //DB::enableQueryLog(); // Enable query log
+            $deletedRows = Booking::where('transaction_id', $transaction->transaction_id)->delete();
+            print_r($deletedRows);
 
-            $transaction->bookings()->update([
-                'from_date' => $request['checkin'],
-                'to_date' => $request['checkout'],
-                'room_type_id' => $request['room_type'],
-                'no_of_rooms' => $request['no_of_rooms'],
-                'adult' => $request['adult'],
-                'child' => $request['child'],
-                'status' => 'confirmed'
+            for($i=0;$i<count($room_type_ids);$i++) 
+            {
+                $booking = new Booking([
+                    'transaction_id' => $transaction->transaction_id, 
+                    'from_date' => $request['checkin'],
+                    'to_date' => $request['checkout'],
+                    'room_type_id' => $room_type_ids[$i],
+                    'no_of_rooms' => $request['no_of_rooms'.$room_type_ids[$i]],
+                    'adult' => $request['adult'.$room_type_ids[$i]],
+                    'child' => $request['child'.$room_type_ids[$i]],
+                    'status' => "confirmed"
+                ]);
+                $booking->save();
 
-            ]);
+            }
 
-        //dd(DB::getQueryLog());
-            return $this->index()->with(
+
+
+            return $this->booking_list()->with(
                 [
                     'message_success' => "Booking of <b>" . $transaction->first_name . "</b> is updated."
                 ]
@@ -319,7 +391,7 @@ class TransactionController extends Controller
         }
         else
         {
-            return $this->index()->with(
+            return $this->booking_list()->with(
                 [
                     'message_success' => "Rooms NOT available."
                 ]
@@ -337,9 +409,10 @@ class TransactionController extends Controller
     {
         $oldName = $transaction->first_name;
         $transaction->delete();
-        return $this->index()->with(
+        Booking::where('transaction_id', $transaction->transaction_id)->delete();
+        return $this->booking_list()->with(
             [
-                'message_success' => "Booking of <b>" . $oldName . "</b> is deleted."
+                'message_success' => "Booking of <b>" . $oldName . "</b> is deleted. Rooms not available."
             ]
         );
     }

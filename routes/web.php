@@ -20,7 +20,8 @@ Route::get('/info', function () {
 
 
 Route::group(['middleware' => ['auth']], function() {
-	Route::get('/bookings','TransactionController@index');
+	//Route::get('/bookings','TransactionController@index');
+	Route::get('/bookings','TransactionController@booking_list');
 	Route::get('/bookroom','TransactionController@create');
 	Route::post('/roombooked','TransactionController@store');
 	Route::get('/transaction/{transaction}','TransactionController@show');
@@ -28,6 +29,7 @@ Route::group(['middleware' => ['auth']], function() {
 	Route::put('/transaction/{transaction}/update','TransactionController@update');
 	Route::delete('/transaction/{transaction}/destroy','TransactionController@destroy');
 	Route::get('/', 'TransactionController@show_availability');
+	Route::post('/availability', 'TransactionController@show_availability');
 });
 
 
