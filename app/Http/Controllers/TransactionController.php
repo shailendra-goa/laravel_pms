@@ -39,7 +39,6 @@ class TransactionController extends Controller
            'room_types' => $room_types 
         ]);
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -82,15 +81,13 @@ class TransactionController extends Controller
 
 
         $room_type_ids = $request['room_type_id'];
-        echo (count($room_type_ids));
-        print_r($room_type_ids);
+        //echo (count($room_type_ids));
 
         for($i=0;$i<count($room_type_ids);$i++) 
         {
-            echo "no of rooms".$request['no_of_rooms'.$room_type_ids[$i]];
-            $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
+            $flagroomAvailable = $this->check_availability($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
             //echo "Room Available".$flagroomAvailable;
-            if(!$flagroomAvailable)
+            if(!$flagroomAvailable) //if 0 break the for loop
             {
                 break;
             }
@@ -125,14 +122,12 @@ class TransactionController extends Controller
         else{
             return $this->booking_list()->with(
                 [
-                    'message_success' => "Booking of <b>" . $transaction->first_name . "</b> could NOT be done."
+                    'message_success' => "Rooms NOT available. Booking of <b>" . $transaction->first_name . "</b> could NOT be done. "
                 ]
             );
         }
-
-        
-
     }
+
 
     public function booking_list()
     {
@@ -145,8 +140,49 @@ class TransactionController extends Controller
 
     }
 
+    public function search_booking(Request $request)
+    {
+        //transaction_id
+        $search_criteria = $request['search'];
 
-    public function Check_Availibilty($from_date,$to_date,$room_type_id,$booking_rooms)
+        //dd($search_value);
+        if($search_criteria == 'transaction_id_opt')
+        {
+            $search_value = $request['transaction_id'];
+            $bookings = DB::select("select transactions.transaction_id, first_name, last_name, email, from_date, to_date, room_name, bookings.no_of_rooms, adult, child from transactions inner join bookings on transactions.transaction_id=bookings.transaction_id inner join room_types on bookings.room_type_id=room_types.room_type_id where transactions.transaction_id=".$search_value." order by transactions.created_at desc");
+        }
+
+        else if ($search_criteria == 'name_opt') 
+        {
+            $search_value = $request['name'];
+            $bookings = DB::select("select transactions.transaction_id, first_name, last_name, email, from_date, to_date, room_name, bookings.no_of_rooms, adult, child from transactions inner join bookings on transactions.transaction_id=bookings.transaction_id inner join room_types on bookings.room_type_id=room_types.room_type_id where (first_name like '%".$search_value."%' || last_name like '%".$search_value."%') order by transactions.created_at desc");
+        }
+
+        else if ($search_criteria == 'checkin_opt') 
+        {
+            $search_value = $request['checkin'];
+            $bookings = DB::select("select transactions.transaction_id, first_name, last_name, email, from_date, to_date, room_name, bookings.no_of_rooms, adult, child from transactions inner join bookings on transactions.transaction_id=bookings.transaction_id inner join room_types on bookings.room_type_id=room_types.room_type_id where from_date='".$search_value."' order by transactions.created_at desc");
+        }
+
+        //if($bookings)
+        //{
+            return view('transactions')->with([
+                'bookings' => $bookings, 'search_value' => $search_value, 'search_criteria' => $search_criteria
+            ]);
+        /*}
+        else
+        {
+            return view('transactions')->with([
+                'bookings' => "No matching records."
+            ]);
+        }*/
+
+
+        
+    }
+
+
+    public function check_availability($from_date,$to_date,$room_type_id,$booking_rooms)
     {
 
         $date = $from_date;
@@ -181,7 +217,6 @@ class TransactionController extends Controller
             $date = date('Y-m-d', strtotime($date. ' + 1 days'));
 
         } 
-
 
         //print_r($flagroomAvailable);
         //exit();
@@ -340,7 +375,7 @@ class TransactionController extends Controller
 
         for($i=0;$i<count($room_type_ids);$i++) 
         {
-            $flagroomAvailable = $this->Check_Availibilty($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
+            $flagroomAvailable = $this->check_availability($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
             //echo "Room Id ".$room_type_ids[$i];
             //echo "Room Available ".$flagroomAvailable;
             if(!$flagroomAvailable)
@@ -412,7 +447,7 @@ class TransactionController extends Controller
         Booking::where('transaction_id', $transaction->transaction_id)->delete();
         return $this->booking_list()->with(
             [
-                'message_success' => "Booking of <b>" . $oldName . "</b> is deleted. Rooms not available."
+                'message_success' => "Booking of <b>" . $oldName . "</b> is deleted."
             ]
         );
     }

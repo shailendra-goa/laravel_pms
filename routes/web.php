@@ -30,6 +30,8 @@ Route::group(['middleware' => ['auth']], function() {
 	Route::delete('/transaction/{transaction}/destroy','TransactionController@destroy');
 	Route::get('/', 'TransactionController@show_availability');
 	Route::post('/availability', 'TransactionController@show_availability');
+	Route::post('/search', 'TransactionController@search_booking');
+
 });
 
 

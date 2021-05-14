@@ -9,21 +9,25 @@
                     <div class="card-body">
                         <form action="/roombooked" method="post">
                             @csrf
-                            <div class="form-group">
-                                <label for="name">First Name</label>
+                            <div class="form-group form-row">
+                              <div class="col">
+                               <label for="name">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name" value="{{old('first_name')}}">
-                            </div>
-                            <div class="form-group">
+                              </div>
+                              <div class="col">
                                 <label for="name">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name"  value="{{old('last_name')}}">
+                              </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group form-row">
+                              <div class="col">
                                 <label for="name">Email</label>
                                 <input type="text" class="form-control" id="email" name="email"  value="{{old('email')}}">
-                            </div>
-                            <div class="form-group">
+                              </div>
+                              <div class="col">
                                 <label for="name">Contact No</label>
                                 <input type="text" class="form-control" id="contact_no" name="contact_no" value="{{old('contact_no')}}">
+                              </div>
                             </div>
                             <div class="form-group">
                                 <label for="name">Address</label>
@@ -33,13 +37,15 @@
                                 <label for="name">Country</label>
                                 <input type="text" class="form-control" id="country" name="country">
                             </div>
-                            <div class="form-group">
+                            <div class="form-group form-row">
+                              <div class="col">
                                 <label for="name">Checkin Date</label>
                                 <input type="date" class="form-control" id="checkin" name="checkin">
-                            </div>
-                            <div class="form-group">
+                              </div>
+                              <div class="col">
                                 <label for="name">Checkout Date</label>
                                 <input type="date" class="form-control" id="checkout" name="checkout">
+                              </div>
                             </div>
                            <!--  <div class="form-group">
                                 <label for="name">No of rooms</label>
