@@ -31,6 +31,8 @@ Route::group(['middleware' => ['auth']], function() {
 	Route::get('/', 'TransactionController@show_availability');
 	Route::post('/availability', 'TransactionController@show_availability');
 	Route::post('/search', 'TransactionController@search_booking');
+	Route::get('/tariff', 'TariffController@create');
+	Route::post('/tariff_add', 'TariffController@store');
 
 });
 
