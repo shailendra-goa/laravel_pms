@@ -42,7 +42,23 @@
                             <li><a class="dropdown-item" href="/bookings">Bookings</a></li>
                             <li><a class="dropdown-item" href="/bookroom">Book Room</a></li>
                           </ul>
-                        </li>                  
+                        </li>
+                        <li class="nav-item dropdown">
+                                <a id="navbarDropdownMenuLink" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                   Billing
+                                </a>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="/occupancy">Add Occupancy</a></li>
+                          </ul>
+                        </li> 
+                        <li class="nav-item dropdown">
+                                <a id="navbarDropdownMenuLink" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                   Setup
+                                </a>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="/tariff">Tariff</a></li>
+                          </ul>
+                        </li>                      
                     </ul>
 
                     <!-- Right Side Of Navbar -->

@@ -33,6 +33,9 @@ Route::group(['middleware' => ['auth']], function() {
 	Route::post('/search', 'TransactionController@search_booking');
 	Route::get('/tariff', 'TariffController@create');
 	Route::post('/tariff_add', 'TariffController@store');
+	Route::get('/occupancy', 'OccupancyController@create');
+	Route::post('/occupancy_added','OccupancyController@store');
+
 
 });
 
