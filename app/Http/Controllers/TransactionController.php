@@ -6,10 +6,15 @@ use App\Transaction;
 use App\Booking;
 use App\room_type;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use DB;
 
 class TransactionController extends Controller
 {
+    /*public function __construct()
+    {
+        $this->middleware('resv');
+    }*/
     /**
      * Display a listing of the resource.
      *
@@ -47,8 +52,6 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        //dd('Store function');
-
         $request->validate([
 
             //transaction table
@@ -86,7 +89,6 @@ class TransactionController extends Controller
         for($i=0;$i<count($room_type_ids);$i++) 
         {
             $flagroomAvailable = $this->check_availability($request['checkin'],$request['checkout'],$room_type_ids[$i],$request['no_of_rooms'.$room_type_ids[$i]]);
-            //echo "Room Available".$flagroomAvailable;
             if(!$flagroomAvailable) //if 0 break the for loop
             {
                 break;
@@ -284,7 +286,7 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction, Booking $booking)
     {
-        $booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
+        /*$booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
 
         foreach ($booking_details as $key => $value) {
                 $booking->from_date = $value->from_date;
@@ -299,7 +301,7 @@ class TransactionController extends Controller
 
             'transaction' => $transaction, 'booking' => $booking
 
-        ]);
+        ]);*/
     }
 
     /**
@@ -310,7 +312,6 @@ class TransactionController extends Controller
      */
     public function edit(Transaction $transaction, Booking $booking)
     {
-        echo $transaction->transaction_id;
         DB::enableQueryLog();
         //$booking = \App\Booking::find($transaction->transaction_id);
         $booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
@@ -352,6 +353,8 @@ class TransactionController extends Controller
     public function update(Request $request, Transaction $transaction)
     {
 
+        abort_unless(Gate::allows('update',$transaction), 403);
+        
         $request->validate([
 
             //transaction table
@@ -442,6 +445,8 @@ class TransactionController extends Controller
      */
     public function destroy(Transaction $transaction)
     {
+        abort_unless(Gate::allows('delete',$transaction), 403);
+
         $oldName = $transaction->first_name;
         $transaction->delete();
         Booking::where('transaction_id', $transaction->transaction_id)->delete();

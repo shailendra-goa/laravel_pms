@@ -38,7 +38,7 @@
                                    Room Booking
                                 </a>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="/">Availability</a></li>
+                            <li><a class="dropdown-item" href="/availability">Availability</a></li>
                             <li><a class="dropdown-item" href="/bookings">Bookings</a></li>
                             <li><a class="dropdown-item" href="/bookroom">Book Room</a></li>
                           </ul>

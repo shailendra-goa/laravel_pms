@@ -45,13 +45,17 @@
       <td>{{ $booking->to_date }}</td>
       <td>{{ $booking->no_of_rooms }}</td>
       <td>{{ $booking->room_name }}</td>
+
       <td>
-        <a class="btn btn-sm btn-outline-primary" href="/transaction/{{ $booking->transaction_id }}/edit">Edit</a>
-        <form class="" style="display: inline" action="/transaction/{{$booking->transaction_id}}/destroy" method="post">
-        @csrf
-        @method("DELETE")
-        <input class="btn btn-sm btn-outline-danger" type="submit" value="Delete">
-        </form>
+        <a class="btn btn-sm btn-outline-primary" href="/transaction/{{ $booking->transaction_id }}/edit">Details</a>
+        @if(auth()->user()->role==='admin' || auth()->user()->role==='resv')
+          <a class="btn btn-sm btn-outline-primary" href="/transaction/{{ $booking->transaction_id }}/edit">Edit</a>
+          <form class="" style="display: inline" action="/transaction/{{$booking->transaction_id}}/destroy" method="post">
+            @csrf
+            @method("DELETE")
+            <input class="btn btn-sm btn-outline-danger" type="submit" value="Delete">
+          </form>
+        @endif
       </td>
     </tr>
     @endforeach

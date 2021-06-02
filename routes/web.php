@@ -13,23 +13,28 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
-Route::get('/info', function () {
-    return view('info');
+Route::get('/', function () {
+    return redirect('login');
+    //return view('welcome');
 });
 
+/*Route::get('/info', function () {
+    return view('info');
+});*/
+
+
+//Route::get('/', 'TransactionController@show_availability');
 
 Route::group(['middleware' => ['auth']], function() {
 	//Route::get('/bookings','TransactionController@index');
 	Route::get('/bookings','TransactionController@booking_list');
-	Route::get('/bookroom','TransactionController@create');
-	Route::post('/roombooked','TransactionController@store');
-	Route::get('/transaction/{transaction}','TransactionController@show');
+	Route::get('/bookroom','TransactionController@create')->middleware(['resv']);
+	Route::post('/roombooked','TransactionController@store')->middleware(['resv']);
+	//Route::get('/transaction/{transaction}','TransactionController@show');
 	Route::get('/transaction/{transaction}/edit','TransactionController@edit');
 	Route::put('/transaction/{transaction}/update','TransactionController@update');
 	Route::delete('/transaction/{transaction}/destroy','TransactionController@destroy');
-	Route::get('/', 'TransactionController@show_availability');
-	Route::post('/availability', 'TransactionController@show_availability');
+	Route::get('/availability', 'TransactionController@show_availability');
 	Route::post('/search', 'TransactionController@search_booking');
 	Route::get('/tariff', 'TariffController@create');
 	Route::post('/tariff_add', 'TariffController@store');
