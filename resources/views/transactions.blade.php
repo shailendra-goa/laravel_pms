@@ -61,7 +61,8 @@
     @endforeach
   @else
   <tr>
-      <th colspan="7" class="alert alert-danger text-center">No records for {{$search_value}}</th>
+     <th colspan="7" class="alert alert-danger text-center">No records</th>
+
 
     </tr>
   @endif
