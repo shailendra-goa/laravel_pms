@@ -12,11 +12,11 @@
                             <div class="form-group form-row">
                               <div class="col">
                                 <label for="name">Room no</label>
-                                <input type="text" class="form-control" id="room_no" name="room_no">
+                                <input type="text" class="form-control" id="room_no" name="room_no" value="{{$_GET['room_no']}}">
                               </div>
                               <div class="col">
                                 <label for="name">Checkin Date</label>
-                                <input type="date" class="form-control" id="check_in" name="check_in" value="{{old('check_in')}}">
+                                <input type="text" class="form-control" id="check_in" name="check_in" value="{{date('d-m-Y')}}">
                               </div>
                               <div class="col">
                                 <label for="name">Checkin Time</label>
@@ -26,7 +26,7 @@
                             <div class="form-group form-row">
                               <div class="col">
                                 <label for="name">Checkout Date</label>
-                                <input type="date" class="form-control" id="check_out" name="check_out" value="{{old('checkin_out')}}">
+                                <input type="date" class="form-control" id="check_out" name="check_out" value="{{old('check_out')}}">
                               </div>
                               <div class="col">
                                 <label for="name">Checkout Time</label>

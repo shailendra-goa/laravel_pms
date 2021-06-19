@@ -202,7 +202,7 @@ class TransactionController extends Controller
                 foreach ($bookedArr as $booked)
                 {
                   $rooms_available = $booked->no_of_rooms - $booked->rooms_booked;
-                  if($rooms_available > $booking_rooms){
+                  if($rooms_available >= $booking_rooms){
                     $flagroomAvailable = 1;
                   }
                   else{
@@ -312,8 +312,7 @@ class TransactionController extends Controller
      */
     public function edit(Transaction $transaction, Booking $booking)
     {
-        DB::enableQueryLog();
-        //$booking = \App\Booking::find($transaction->transaction_id);
+        //DB::enableQueryLog();
         $booking_details = DB::table('bookings')->where('transaction_id', $transaction->transaction_id)->get();
         //dd(DB::getQueryLog());
 

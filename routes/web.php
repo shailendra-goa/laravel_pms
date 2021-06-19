@@ -38,8 +38,10 @@ Route::group(['middleware' => ['auth']], function() {
 	Route::post('/search', 'TransactionController@search_booking');
 	Route::get('/tariff', 'TariffController@create');
 	Route::post('/tariff_add', 'TariffController@store');
-	Route::get('/occupancy', 'OccupancyController@create');
+	Route::get('/occupancy-add', 'OccupancyController@create');
 	Route::post('/occupancy_added','OccupancyController@store');
+	Route::get('/occupancy','OccupancyController@occupant_list');
+
 
 
 });

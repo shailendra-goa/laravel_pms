@@ -48,7 +48,8 @@
                                    Billing
                                 </a>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="/occupancy">Add Occupancy</a></li>
+                            <li><a class="dropdown-item" href="/occupancy">Occupancy list</a></li>
+                            <li><a class="dropdown-item" href="/occupancy-add">Add Occupancy</a></li>
                           </ul>
                         </li> 
                         <li class="nav-item dropdown">

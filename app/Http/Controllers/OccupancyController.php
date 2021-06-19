@@ -50,9 +50,8 @@ class OccupancyController extends Controller
             'country' => 'required',
         ]);
 
-        $occupancy = new Occupancy([
-            
-            'check_in' => $request['check_in'],
+        $occupancy = new Occupancy([            
+            'check_in' => date('Y-m-d',strtotime($request['check_in'])),
             'checkin_time' => $request['checkin_time'],
             'check_out' => $request['check_out'],
             'checkout_time' => $request['checkout_time'],
@@ -64,10 +63,9 @@ class OccupancyController extends Controller
             'country' => $request['country'],
             'user' => auth() -> user() ->name,
         ]);
-        //dd($occupancy);
         $occupancy->save();
 
-        $date = $request['check_in'];
+        $date = date('Y-m-d',strtotime($request['check_in']));
         $to_date = $request['check_out'];
         $flagroomAvailable = 1;
 
@@ -142,8 +140,53 @@ class OccupancyController extends Controller
 
         }
 
+        return $this->occupant_list();
+
        
     }
+
+    public function occupant_list()
+    {
+        DB::enableQueryLog();
+        $rooms = DB::table('rooms')->where('active', 'y')->get();
+        //dd(DB::getQueryLog());
+        $html = ''; 
+        foreach($rooms as $room) {
+            $occupancy = DB::select("select billings.id,guest_name1,guest_name2,adult,extra_person,child,check_in,check_out from occupancies inner join billings on billings.occupancy_id=occupancies.occupancy_id where day='".date('Y-m-d')."' and room_no=".$room->room_no);
+            if($occupancy) {
+                foreach ($occupancy as $occupant) {
+                    $html .= '<tr>
+                              <th scope="row">'.$room->room_no.'</th>
+                              <td>'.$occupant->guest_name1. '/' .$occupant->guest_name2.'</td>
+                              <td>'.$occupant->adult.'</td>
+                              <td>'.$occupant->extra_person.'</td>
+                              <td>'.$occupant->child.'</td>
+                              <td>'.date("d-m-Y", strtotime($occupant->check_in)).'</td>
+                              <td>'.date("d-m-Y", strtotime($occupant->check_out)).'</td>
+                              <td>Action</td>
+                          </tr>';
+                }
+                
+            }
+            else {
+                    $html .= '<tr>
+                              <th scope="row">'.$room->room_no.'</th>
+                              <td>&nbsp</td>
+                              <td>&nbsp</td>
+                              <td>&nbsp</td>
+                              <td>&nbsp</td>
+                              <td>&nbsp</td>
+                              <td>&nbsp</td>
+                              <td><a class="btn btn-sm btn-outline-primary" href="/occupancy-add?room_no='.$room->room_no.'">Add</a></td>
+                          </tr>';                
+            }
+
+        }
+        return view('occupants_list')->with([
+            'html' => $html
+        ]);
+    }
+
 
     /**
      * Display the specified resource.

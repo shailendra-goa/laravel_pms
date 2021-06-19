@@ -28,8 +28,8 @@
     <tr class="table-active">
       <th scope="col">#</th>
       <th scope="col">Guest Name</th>
-      <th scope="col">From Date</th>
-      <th scope="col">To Date</th>
+      <th scope="col">Check in Date</th>
+      <th scope="col">Check out Date</th>
       <th scope="col">No. of rooms</th>
       <th scope="col">Room type</th>
       <th scope="col">Action</th>
@@ -41,19 +41,19 @@
     <tr>
       <th scope="row">{{ $booking->transaction_id}}</th>
       <td>{{ $booking->first_name }} {{ $booking->last_name }}</td>
-      <td>{{ $booking->from_date }}</td>
-      <td>{{ $booking->to_date }}</td>
+      <td>{{ date("d-m-Y",strtotime($booking->from_date)) }}</td>
+      <td>{{ date("d-m-Y",strtotime($booking->to_date)) }}</td>
       <td>{{ $booking->no_of_rooms }}</td>
       <td>{{ $booking->room_name }}</td>
 
       <td>
         <a class="btn btn-sm btn-outline-primary" href="/transaction/{{ $booking->transaction_id }}/edit">Details</a>
         @if(auth()->user()->role==='admin' || auth()->user()->role==='resv')
-          <a class="btn btn-sm btn-outline-primary" href="/transaction/{{ $booking->transaction_id }}/edit">Edit</a>
+          <a class="btn btn-sm btn-outline-secondary" href="/transaction/{{ $booking->transaction_id }}/edit">Edit</a>
           <form class="" style="display: inline" action="/transaction/{{$booking->transaction_id}}/destroy" method="post">
             @csrf
             @method("DELETE")
-            <input class="btn btn-sm btn-outline-danger" type="submit" value="Delete">
+            <input class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete')"  type="submit" value="Delete">
           </form>
         @endif
       </td>
