@@ -41,9 +41,10 @@ Route::group(['middleware' => ['auth']], function() {
 	Route::get('/occupancy-add', 'OccupancyController@create');
 	Route::post('/occupancy_added','OccupancyController@store');
 	Route::get('/occupancy','OccupancyController@occupant_list');
-
-
-
+	Route::get('/occupancy/{occupancy}/edit','OccupancyController@edit');
+	Route::put('/occupancy/{occupancy}/update','OccupancyController@update');
+	Route::get('/occupancy/{occupancy}/roompax','OccupancyController@viewroompax');
+	Route::put('/occupancy/{occupancy}/changeroom','OccupancyController@changeroom');
 });
 
 

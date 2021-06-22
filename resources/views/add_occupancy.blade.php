@@ -36,15 +36,15 @@
                             <div class="form-group form-row">
                               <div class="col">
                                 <label for="name">Adult</label>
-                                <input type="text" class="form-control" id="adult" name="adult" value="{{old('adult')}}">
+                                <input type="number" class="form-control" id="adult" name="adult" value="{{old('adult')}}">
                               </div>
                               <div class="col">
                                 <label for="name">Extra Person</label>
-                                <input type="text" class="form-control" id="extra_person" name="extra_person" value="{{old('extra_person')}}">
+                                <input type="number" class="form-control" id="extra_person" name="extra_person" value="{{old('extra_person')}}">
                               </div>
                               <div class="col">
                                 <label for="name">Child</label>
-                                <input type="text" class="form-control" id="child" name="child" value="{{old('child')}}">
+                                <input type="number" class="form-control" id="child" name="child" value="{{old('child')}}">
                               </div>
                             </div>
                             <div class="form-group form-row">
@@ -75,6 +75,7 @@
                                 <label for="name">Country</label>
                                 <input type="text" class="form-control" id="country" name="country" value="{{old('country')}}">
                             </div>
+                            <div class="row g-2">
                             <div class="text-center">
                                 <input class="btn btn-primary mt-4" type="submit" value="Save">
                             </div>

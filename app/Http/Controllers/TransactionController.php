@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Transaction;
 use App\Booking;
-use App\room_type;
+use App\Room_Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use DB;
@@ -38,7 +38,7 @@ class TransactionController extends Controller
     public function create()
     {
         //return view('book_room');
-        $room_types = room_type::all();
+        $room_types = Room_Type::all();
 
         return view('book_room')->with([
            'room_types' => $room_types 
@@ -333,7 +333,7 @@ class TransactionController extends Controller
 
         //echo "<pre>";print_r($booking);exit();
 
-        $room_types = room_type::all();
+        $room_types = Room_Type::all();
 
         return view('edit_booking')->with([
 
